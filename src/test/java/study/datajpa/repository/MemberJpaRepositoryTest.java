@@ -21,6 +21,7 @@ class MemberJpaRepositoryTest {
 	
 	@Test
 	public void testMember() {
+		System.out.println("memberJpaRepository = " + memberJpaRepository.getClass());
 		Member member = new Member("MemberA");
 		Member savedMember = memberJpaRepository.save(member);
 		
@@ -58,8 +59,6 @@ class MemberJpaRepositoryTest {
 		memberJpaRepository.delete(member2);
 		long deletedCount = memberJpaRepository.count();
 		assertThat(deletedCount).isEqualTo(0);
-		
-		
 	}
 	
 	

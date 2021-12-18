@@ -3,6 +3,8 @@ package study.datajpa.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import study.datajpa.entity.Member;
 
@@ -13,4 +15,16 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	List<Member> findHelloBy();
 
 	List<Member> findTop3HelloBy();
+	
+	// @Query annotation을 지워줘도 작동을 한다?!
+	// cuz 'Member.findByUsername'의 네임드 쿼리를 먼저 찾는다.
+	// (Member에 위치한 findByUsername로 설정된 named query)
+	// 그 이후 메서드 명으로 쿼리 생성하는 것을 수행한다.
+//	@Query(name = "Member.findByUsername")
+	List<Member> findByUsername(@Param("username") String username);
+	
+	@Query("select m from Member m where m.username = :username and m.age = :age)")
+	List<Member> findUser(@Param("username") String username, @Param("age") int age);
+	 
+	
 }

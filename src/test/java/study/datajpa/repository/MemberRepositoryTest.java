@@ -181,8 +181,9 @@ class MemberRepositoryTest {
 		// Spring DATA JPA에서는 null 값을 반환해주도록 처리되어있다.
 		Member findMemberByUsername = memberRepository.findMemberByUsername("AAA");
 		System.out.println("result = " + findMemberByUsername);
-		
+		 
 		Optional<Member> findOptionalByUsername = memberRepository.findOptionalByUsername("AAA");
+		System.out.println("result = " + findOptionalByUsername);
 	}
 
 }

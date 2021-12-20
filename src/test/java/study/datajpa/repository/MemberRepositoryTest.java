@@ -2,7 +2,9 @@ package study.datajpa.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,6 +143,46 @@ class MemberRepositoryTest {
 		for (MemberDto dto : memberDto) {
 			System.out.println("dto = " + dto);
 		}
+	}
+	
+	@Test
+	public void findByNames() {
+		Member m1 = new Member("AAA", 10);
+		Member m2 = new Member("BBB", 20);
+		
+		memberRepository.save(m1);
+		memberRepository.save(m2);
+		
+		
+		List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+		for (Member member : result) {
+			System.out.println("member = " + member);
+		}
+	}
+	
+	@Test
+	public void returnType() {
+		Member m1 = new Member("AAA", 10);
+		Member m2 = new Member("BBB", 20);
+		
+		memberRepository.save(m1);
+		memberRepository.save(m2);
+		
+		
+		// 만약 매치되는 값이 없을 때
+		// empty Collection을 반환해준다.
+		// null 값이 아닌 것을 보장해준다.
+		List<Member> findListByUsername = memberRepository.findListByUsername("AAA");
+		System.out.println("result = " + findListByUsername.size());
+		
+		// 단건인 경우 결과가 없으면
+		// null 값을 반환해준다.
+		// JPA에서는 null 값이 반환된다면 Exception을 발생시키지만
+		// Spring DATA JPA에서는 null 값을 반환해주도록 처리되어있다.
+		Member findMemberByUsername = memberRepository.findMemberByUsername("AAA");
+		System.out.println("result = " + findMemberByUsername);
+		
+		Optional<Member> findOptionalByUsername = memberRepository.findOptionalByUsername("AAA");
 	}
 
 }

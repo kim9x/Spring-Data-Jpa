@@ -4,11 +4,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import study.datajpa.entity.Member;
@@ -57,5 +63,33 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	// @Modifying의 아래 옵션에서 영속성 컨텍스트의 flush와 clear가 가능하다. 
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Member m set m.age = m.age + 1 where m.age >= :age")
-	int bulkAgePlus(@Param("age") int age);;
+	int bulkAgePlus(@Param("age") int age);
+	
+	@Query("select m from Member m left join fetch m.team")
+	List<Member> findMemberFetchJoin();
+	
+	// @EntityGraph로 fetch join을 쉽게할 수 있다.
+	@Override
+	@EntityGraph(attributePaths = {"team"})
+	List<Member> findAll();
+	
+	// JPQL에 '@EntityGraph'를 추가해서 fetch join을 쉽게 할 수도 있다. 
+	@EntityGraph(attributePaths = {"team"})
+	@Query("select m from Member m")
+	List<Member> findMemberEntityGraph();
+	
+	// find..by 사이의 '..' 구간엔
+	// TOP3같은 예약어로 지정되너 있는 것들을 제외하고 아무 값이나 들어가도 된다.
+	// 메소드 네임으로 지정하는 경우에도
+	// '@EntityGraph'를 이용해서 fetch join을 쉽게할 수 있다.
+//	@EntityGraph(attributePaths = {"team"})
+	@EntityGraph("Member.all")
+	List<Member> findEntityGraphByUsername(@Param("username") String username);
+	
+	@QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true")) 
+	Member findReadOnlyByUsername(String username);
+	
+	// select for update
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	List<Member> findLockByUsername(String username);
 }

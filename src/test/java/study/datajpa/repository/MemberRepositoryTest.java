@@ -9,6 +9,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,6 +188,57 @@ class MemberRepositoryTest {
 		 
 		Optional<Member> findOptionalByUsername = memberRepository.findOptionalByUsername("AAA");
 		System.out.println("result = " + findOptionalByUsername);
+	}
+	
+	@Test
+	public void paging() {
+		// given
+		memberRepository.save(new Member("member1", 10));
+		memberRepository.save(new Member("member2", 10));
+		memberRepository.save(new Member("member3", 10));
+		memberRepository.save(new Member("member4", 10));
+		memberRepository.save(new Member("member5", 10));
+		
+		int age = 10;
+		PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+		
+		// when
+		Page<Member> page = memberRepository.findByAge(age, pageRequest);
+		
+		// Entity를 반환하면 API 스펙이 변하게 되므로
+		// DTO로 한번 감싸서 보내주어야한다.
+		// 아래의 경우엔 Member Entity -> MemberDto
+		Page<MemberDto> toMap = page.map(m -> new MemberDto(m.getId(), m.getUsername(), null));
+		
+		// 총 개수 등은 알려주지 않지만 totalCount+1 처리를 해주어서
+		// 어플리케이션 등등에서 데이터가 더 존재할 시 [더보기] 버튼 등을
+		// 보이도록 동작하게 할 수 있음.
+//		Slice<Member> page = memberRepository.findByAge(age, pageRequest);
+		
+		// limit만 걸어주고 끝.!
+//		List<Member> page = memberRepository.findByAge(age, pageRequest);
+		
+		// 페이지 계산 공식 적용...
+		// totalPage = totalCount / size ...
+		// 마지막 페이지...
+		// 최초 페이지..
+		
+		// then
+		List<Member> content = page.getContent();
+//		long totalElements = page.getTotalElements();
+		
+		for (Member member : content) {
+			System.out.println("member = " + member);
+		}
+		
+//		System.out.println("totalElements = " + totalElements);
+		
+		assertThat(content.size()).isEqualTo(3);
+		assertThat(page.getTotalElements()).isEqualTo(5);
+		assertThat(page.getNumber()).isEqualTo(0);
+		assertThat(page.getTotalPages()).isEqualByComparingTo(2);
+		assertThat(page.isFirst()).isTrue();
+		assertThat(page.hasNext()).isTrue();
 	}
 
 }
